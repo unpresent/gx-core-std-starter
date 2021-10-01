@@ -1,4 +1,4 @@
-package ru.gx.kafka.load;
+package ru.gx.std.load;
 
 @SuppressWarnings("unused")
 public interface KafkaIncomeOffsetsController {

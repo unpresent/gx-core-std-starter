@@ -1,4 +1,4 @@
-package ru.gx.kafka.upload;
+package ru.gx.std.upload;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.EqualsAndHashCode;
@@ -16,8 +16,9 @@ import ru.gx.data.ObjectAlreadyExistsException;
 import ru.gx.data.ObjectNotExistsException;
 import ru.gx.data.jpa.EntityObject;
 import ru.gx.kafka.PartitionOffset;
-import ru.gx.kafka.entities.KafkaSnapshotPublishedOffsetEntity;
-import ru.gx.kafka.repository.KafkaSnapshotPublishedOffsetsRepository;
+import ru.gx.std.entities.KafkaSnapshotPublishedOffsetEntity;
+import ru.gx.std.repository.KafkaSnapshotPublishedOffsetsRepository;
+import ru.gx.kafka.upload.SimpleOutcomeTopicUploader;
 
 import java.security.InvalidParameterException;
 import java.util.*;
@@ -29,7 +30,7 @@ import static lombok.AccessLevel.PROTECTED;
 @ToString
 @Slf4j
 @SuppressWarnings("unused")
-public class EntitiesUploader {
+public abstract class AbstractEntitiesUploader implements EntitiesUploader {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
     @Getter(PROTECTED)
@@ -54,7 +55,7 @@ public class EntitiesUploader {
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialization">
-    public EntitiesUploader() {
+    protected AbstractEntitiesUploader() {
         this.changesMap = new HashMap<>();
         this.uploadingEntityDescriptors = new ArrayList<>();
     }
@@ -68,9 +69,10 @@ public class EntitiesUploader {
      * @param descriptor Описатель, который надо зарегистрировать.
      * @return this.
      */
+    @Override
     @NotNull
     public <O extends DataObject, P extends DataPackage<O>, E extends EntityObject>
-    EntitiesUploader register(@NotNull final UploadingEntityDescriptor<O, P, E> descriptor) {
+    AbstractEntitiesUploader register(@NotNull final UploadingEntityDescriptor<O, P, E> descriptor) {
         final var descriptors = this.uploadingEntityDescriptors;
         for (int i = 0; i < descriptors.size(); i++) {
             final var local = descriptors.get(i);
@@ -88,6 +90,7 @@ public class EntitiesUploader {
      * @return Получение описателя с указанным топиком. Если такого описателя нет, то возвращается null.
      */
     @SuppressWarnings("unchecked")
+    @Override
     @NotNull
     public <O extends DataObject, P extends DataPackage<O>, E extends EntityObject>
     UploadingEntityDescriptor<O, P, E> getDescriptor(@NotNull final String topic) {
@@ -104,6 +107,7 @@ public class EntitiesUploader {
      * @return Получение описателя с указанным классом сущности. Если такого описателя нет, то возвращается null.
      */
     @SuppressWarnings("unchecked")
+    @Override
     @NotNull
     public <O extends DataObject, P extends DataPackage<O>, E extends EntityObject>
     UploadingEntityDescriptor<O, P, E> getDescriptor(@NotNull final Class<? extends EntityObject> entityClass) {
@@ -118,6 +122,7 @@ public class EntitiesUploader {
     /**
      * @return Список всех описателей выгрузки.
      */
+    @Override
     @NotNull
     public Collection<UploadingEntityDescriptor<? extends DataObject, ? extends DataPackage<DataObject>, ? extends EntityObject>>
     getAllDescriptors() {
@@ -136,6 +141,7 @@ public class EntitiesUploader {
      * @param changedEntities Список изменившихся экземпляров сущности.
      */
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+    @Override
     public void setChanges(@NotNull final Class<? extends EntityObject> entityClass, @NotNull final Collection<EntityObject> changedEntities) {
         synchronized (entityClass) {
             final var list = getChangesList(entityClass);
@@ -148,6 +154,7 @@ public class EntitiesUploader {
     }
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+    @Override
     @NotNull
     public PartitionOffset uploadChangesByEntityClass(
             @NotNull final Class<? extends EntityObject> entityClass
@@ -169,6 +176,7 @@ public class EntitiesUploader {
     }
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+    @Override
     @NotNull
     public PartitionOffset uploadSnapshot(
             @NotNull final Class<? extends EntityObject> entityClass,
@@ -189,6 +197,7 @@ public class EntitiesUploader {
         }
     }
 
+    @Override
     public void publishSnapshot(@NotNull String topic) throws Exception {
         final var descriptor = getDescriptor(topic);
         log.info("Starting loading dictionary {}", descriptor.getEntityClass().getSimpleName());
@@ -205,6 +214,7 @@ public class EntitiesUploader {
         log.info("Dictionary {} published into topic {}. Partition: {}, offset: {}", descriptor.getEntityClass().getSimpleName(), descriptor.getTopic(), partitionOffset.getPartition(), partitionOffset.getOffset());
     }
 
+    @Override
     @Nullable
     public KafkaSnapshotPublishedOffsetEntity getOffset(@NotNull final String topic) {
         return this.kafkaSnapshotPublishedOffsetEntitiesCache.get(topic);

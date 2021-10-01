@@ -1,4 +1,4 @@
-package ru.gx.kafka.entities;
+package ru.gx.std.entities;
 
 import ru.gx.data.jpa.AbstractEntitiesPackage;
 

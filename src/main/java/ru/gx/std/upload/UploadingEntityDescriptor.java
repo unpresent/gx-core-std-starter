@@ -1,4 +1,4 @@
-package ru.gx.kafka.upload;
+package ru.gx.std.upload;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -11,6 +11,8 @@ import ru.gx.data.DataObject;
 import ru.gx.data.DataPackage;
 import ru.gx.data.jpa.AbstractDtoFromEntityConverter;
 import ru.gx.data.jpa.EntityObject;
+import ru.gx.kafka.upload.OutcomeTopicUploadingDescriptor;
+import ru.gx.kafka.upload.OutcomeTopicUploadingDescriptorsDefaults;
 
 import java.lang.reflect.ParameterizedType;
 

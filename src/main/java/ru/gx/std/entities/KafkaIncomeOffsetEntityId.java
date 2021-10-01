@@ -1,4 +1,4 @@
-package ru.gx.kafka.entities;
+package ru.gx.std.entities;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

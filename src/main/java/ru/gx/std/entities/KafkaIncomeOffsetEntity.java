@@ -1,10 +1,11 @@
-package ru.gx.kafka.entities;
+package ru.gx.std.entities;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import ru.gx.data.jpa.AbstractEntityObject;
 
 import javax.persistence.*;

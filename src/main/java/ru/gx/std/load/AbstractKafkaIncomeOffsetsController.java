@@ -1,12 +1,13 @@
-package ru.gx.kafka.load;
+package ru.gx.std.load;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.gx.kafka.PartitionOffset;
-import ru.gx.kafka.entities.KafkaIncomeOffsetEntity;
-import ru.gx.kafka.repository.KafkaOffsetsRepository;
+import ru.gx.std.entities.KafkaIncomeOffsetEntity;
+import ru.gx.kafka.load.IncomeTopicsConfiguration;
+import ru.gx.std.repository.KafkaOffsetsRepository;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -23,6 +24,9 @@ public abstract class AbstractKafkaIncomeOffsetsController implements KafkaIncom
     @Getter
     @Setter(value = PROTECTED, onMethod_ = @Autowired)
     private KafkaOffsetsRepository kafkaOffsetsRepository;
+
+    protected AbstractKafkaIncomeOffsetsController() {
+    }
 
     @SuppressWarnings("unused")
     @Override
