@@ -1,2 +1,2 @@
 # Auto Configure
-# org.springframework.boot.autoconfigure.EnableAutoConfiguration=ru.gx.config.CommonAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=ru.gx.kafka.config.CommonAutoConfiguration

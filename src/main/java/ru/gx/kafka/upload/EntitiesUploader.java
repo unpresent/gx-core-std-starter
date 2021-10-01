@@ -1,30 +1,38 @@
 package ru.gx.kafka.upload;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.gx.data.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.gx.data.DataObject;
+import ru.gx.data.DataPackage;
+import ru.gx.data.ObjectAlreadyExistsException;
+import ru.gx.data.ObjectNotExistsException;
 import ru.gx.data.jpa.EntityObject;
 import ru.gx.kafka.PartitionOffset;
+import ru.gx.kafka.entities.KafkaSnapshotPublishedOffsetEntity;
+import ru.gx.kafka.repository.KafkaSnapshotPublishedOffsetsRepository;
 
 import java.security.InvalidParameterException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
+
+import static lombok.AccessLevel.PROTECTED;
 
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ToString
+@Slf4j
 @SuppressWarnings("unused")
 public class EntitiesUploader {
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Fields">
-    @Getter(AccessLevel.PROTECTED)
+    @Getter(PROTECTED)
     @NotNull
     private final Map<Class<? extends EntityObject>, Collection<EntityObject>> changesMap;
 
@@ -32,14 +40,21 @@ public class EntitiesUploader {
     private final List<UploadingEntityDescriptor<? extends DataObject, ? extends DataPackage<DataObject>, ? extends EntityObject>> uploadingEntityDescriptors;
 
     @Getter
+    @Setter(value = PROTECTED, onMethod_ = @Autowired)
     @NotNull
-    private final SimpleOutcomeTopicUploader simpleOutcomeTopicUploader;
+    private SimpleOutcomeTopicUploader simpleOutcomeTopicUploader;
+
+    @NotNull
+    private final Map<String, KafkaSnapshotPublishedOffsetEntity> kafkaSnapshotPublishedOffsetEntitiesCache = new HashMap<>();
+
+    @Getter
+    @Setter(value = PROTECTED, onMethod_ = @Autowired)
+    private KafkaSnapshotPublishedOffsetsRepository kafkaSnapshotPublishedOffsetsRepository;
 
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
     // <editor-fold desc="Initialization">
-    public EntitiesUploader(@NotNull final ObjectMapper objectMapper) {
-        this.simpleOutcomeTopicUploader = new SimpleOutcomeTopicUploader(objectMapper);
+    public EntitiesUploader() {
         this.changesMap = new HashMap<>();
         this.uploadingEntityDescriptors = new ArrayList<>();
     }
@@ -172,6 +187,27 @@ public class EntitiesUploader {
             getChangesList(entityClass).clear();
             return result;
         }
+    }
+
+    public void publishSnapshot(@NotNull String topic) throws Exception {
+        final var descriptor = getDescriptor(topic);
+        log.info("Starting loading dictionary {}", descriptor.getEntityClass().getSimpleName());
+        final var allObjects = descriptor.getRepository().findAll();
+        log.info("Starting publish dictionary {} into topic {}; object count {}", descriptor.getEntityClass().getSimpleName(), descriptor.getTopic(), allObjects.size());
+        final var partitionOffset = uploadSnapshot(descriptor.getEntityClass(), allObjects);
+
+        final var kafkaSnapshotPublishedOffsetEntity = new KafkaSnapshotPublishedOffsetEntity()
+                .setTopic(descriptor.getTopic())
+                .setPartition(partitionOffset.getPartition())
+                .setStartOffset(partitionOffset.getOffset());
+        this.kafkaSnapshotPublishedOffsetEntitiesCache.put(descriptor.getTopic(), kafkaSnapshotPublishedOffsetEntity);
+        this.kafkaSnapshotPublishedOffsetsRepository.save(kafkaSnapshotPublishedOffsetEntity);
+        log.info("Dictionary {} published into topic {}. Partition: {}, offset: {}", descriptor.getEntityClass().getSimpleName(), descriptor.getTopic(), partitionOffset.getPartition(), partitionOffset.getOffset());
+    }
+
+    @Nullable
+    public KafkaSnapshotPublishedOffsetEntity getOffset(@NotNull final String topic) {
+        return this.kafkaSnapshotPublishedOffsetEntitiesCache.get(topic);
     }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------------
