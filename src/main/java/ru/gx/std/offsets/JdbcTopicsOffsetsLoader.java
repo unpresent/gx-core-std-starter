@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.gx.data.ActiveConnectionsContainer;
 import ru.gx.kafka.TopicDirection;
-import ru.gx.kafka.load.IncomeTopicsConfiguration;
 import ru.gx.kafka.offsets.TopicPartitionOffset;
 import ru.gx.kafka.offsets.TopicsOffsetsLoader;
 
@@ -19,19 +18,6 @@ import java.util.Collection;
 import static lombok.AccessLevel.PROTECTED;
 
 public class JdbcTopicsOffsetsLoader implements TopicsOffsetsLoader {
-    private final static String sqlSelect =
-            "SELECT\n" +
-                    "    \"Topic\",\n" +
-                    "    \"Partition\",\n" +
-                    "    \"Offset\"\n" +
-                    "FROM \"Kafka\".\"Offsets\"" +
-                    "WHERE  \"Direction\" = ?" +
-                    "   AND \"ServiceName\" = ?";
-    private final static int columnIndexTopic = 1;
-    private final static int columnIndexPartition = 2;
-    private final static int columnIndexOffset = 3;
-    private final static int paramIndexSelectDirection = 1;
-    private final static int paramIndexSelectServiceName = 2;
 
     @Getter(PROTECTED)
     @Setter(value = PROTECTED, onMethod_ = @Autowired)
@@ -43,15 +29,15 @@ public class JdbcTopicsOffsetsLoader implements TopicsOffsetsLoader {
         final var connection = getCheckedConnection();
 
         final var result = new ArrayList<TopicPartitionOffset>();
-        try (final var stmt = connection.prepareStatement(sqlSelect)) {
-            stmt.setString(paramIndexSelectDirection, direction.name());
-            stmt.setString(paramIndexSelectServiceName, serviceName);
+        try (final var stmt = connection.prepareStatement(TopicsOffsetsSql.Load.SQL)) {
+            stmt.setString(TopicsOffsetsSql.Load.PARAM_INDEX_DIRECTION, direction.name());
+            stmt.setString(TopicsOffsetsSql.Load.PARAM_INDEX_SERVICE_NAME, serviceName);
             final var rs = stmt.executeQuery();
             while (rs.next()) {
                 result.add(new TopicPartitionOffset(
-                        rs.getString(columnIndexTopic),
-                        rs.getInt(columnIndexPartition),
-                        rs.getLong(columnIndexOffset)
+                        rs.getString(TopicsOffsetsSql.Load.COLUMN_INDEX_TOPIC),
+                        rs.getInt(TopicsOffsetsSql.Load.COLUMN_INDEX_PARTITION),
+                        rs.getLong(TopicsOffsetsSql.Load.COLUMN_INDEX_OFFSET)
                 ));
             }
         }
