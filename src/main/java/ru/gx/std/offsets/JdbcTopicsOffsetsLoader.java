@@ -5,8 +5,8 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.gx.channels.ChannelDirection;
 import ru.gx.data.ActiveConnectionsContainer;
-import ru.gx.kafka.TopicDirection;
 import ru.gx.kafka.offsets.TopicPartitionOffset;
 import ru.gx.kafka.offsets.TopicsOffsetsLoader;
 
@@ -25,7 +25,7 @@ public class JdbcTopicsOffsetsLoader implements TopicsOffsetsLoader {
 
     @SneakyThrows(SQLException.class)
     @Override
-    public Collection<TopicPartitionOffset> loadOffsets(@NotNull final TopicDirection direction, @NotNull final String serviceName) {
+    public Collection<TopicPartitionOffset> loadOffsets(@NotNull final ChannelDirection direction, @NotNull final String serviceName) {
         final var connection = getCheckedConnection();
 
         final var result = new ArrayList<TopicPartitionOffset>();

@@ -6,8 +6,8 @@ import lombok.SneakyThrows;
 import org.hibernate.Session;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.gx.channels.ChannelDirection;
 import ru.gx.data.ActiveSessionsContainer;
-import ru.gx.kafka.TopicDirection;
 import ru.gx.kafka.offsets.TopicPartitionOffset;
 import ru.gx.kafka.offsets.TopicsOffsetsLoader;
 
@@ -27,7 +27,7 @@ public class JpaTopicsOffsetsLoader implements TopicsOffsetsLoader {
     @SuppressWarnings("unchecked")
     @SneakyThrows(SQLException.class)
     @Override
-    public Collection<TopicPartitionOffset> loadOffsets(@NotNull final TopicDirection direction, @NotNull final String serviceName) {
+    public Collection<TopicPartitionOffset> loadOffsets(@NotNull final ChannelDirection direction, @NotNull final String serviceName) {
         final var session = getCheckedSession();
 
         final var result = new ArrayList<TopicPartitionOffset>();

@@ -6,13 +6,11 @@ import lombok.SneakyThrows;
 import org.hibernate.Session;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.gx.data.ActiveConnectionsContainer;
+import ru.gx.channels.ChannelDirection;
 import ru.gx.data.ActiveSessionsContainer;
-import ru.gx.kafka.TopicDirection;
 import ru.gx.kafka.offsets.TopicPartitionOffset;
 import ru.gx.kafka.offsets.TopicsOffsetsSaver;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
 
@@ -25,7 +23,7 @@ public class JpaTopicsOffsetsSaver implements TopicsOffsetsSaver {
 
     @SneakyThrows(SQLException.class)
     @Override
-    public void saveOffsets(@NotNull final TopicDirection direction, @NotNull final String readerName, @NotNull final Collection<TopicPartitionOffset> offsets) {
+    public void saveOffsets(@NotNull final ChannelDirection direction, @NotNull final String readerName, @NotNull final Collection<TopicPartitionOffset> offsets) {
         final var session = getCheckedSession();
         final var stmt = session.createSQLQuery(TopicsOffsetsSql.Save.SQL);
         for (var item : offsets) {
