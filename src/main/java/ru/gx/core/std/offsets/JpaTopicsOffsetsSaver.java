@@ -1,4 +1,4 @@
-package ru.gx.std.offsets;
+package ru.gx.core.std.offsets;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,10 +6,10 @@ import lombok.SneakyThrows;
 import org.hibernate.Session;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.gx.channels.ChannelDirection;
-import ru.gx.data.ActiveSessionsContainer;
-import ru.gx.kafka.offsets.TopicPartitionOffset;
-import ru.gx.kafka.offsets.TopicsOffsetsSaver;
+import ru.gx.core.channels.ChannelDirection;
+import ru.gx.core.data.ActiveSessionsContainer;
+import ru.gx.core.kafka.offsets.TopicPartitionOffset;
+import ru.gx.core.kafka.offsets.TopicsOffsetsSaver;
 
 import java.sql.SQLException;
 import java.util.Collection;

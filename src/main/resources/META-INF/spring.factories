@@ -1,2 +1,2 @@
 # Auto Configure
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=ru.gx.std.config.CommonAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=ru.gx.core.std.config.CommonAutoConfiguration

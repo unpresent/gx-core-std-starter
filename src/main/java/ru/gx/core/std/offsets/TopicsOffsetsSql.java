@@ -1,4 +1,4 @@
-package ru.gx.std.offsets;
+package ru.gx.core.std.offsets;
 
 class TopicsOffsetsSql {
     public static class Load {
