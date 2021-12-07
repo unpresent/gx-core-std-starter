@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ru.gx.core.channels.ChannelDirection;
 import ru.gx.core.data.ActiveConnectionsContainer;
 import ru.gx.core.kafka.offsets.TopicPartitionOffset;
-import ru.gx.core.kafka.offsets.TopicsOffsetsLoader;
+import ru.gx.core.kafka.offsets.TopicsOffsetsController;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -17,7 +17,7 @@ import java.util.Collection;
 
 import static lombok.AccessLevel.PROTECTED;
 
-public class JdbcTopicsOffsetsLoader implements TopicsOffsetsLoader {
+public class JdbcTopicsOffsetsController implements TopicsOffsetsController {
 
     @Getter(PROTECTED)
     @Setter(value = PROTECTED, onMethod_ = @Autowired)
@@ -42,6 +42,22 @@ public class JdbcTopicsOffsetsLoader implements TopicsOffsetsLoader {
             }
         }
         return result;
+    }
+
+    @SneakyThrows(SQLException.class)
+    @Override
+    public void saveOffsets(@NotNull final ChannelDirection direction, @NotNull final String readerName, @NotNull final Collection<TopicPartitionOffset> offsets) {
+        final var connection = getCheckedConnection();
+        try (final var stmt = connection.prepareStatement(TopicsOffsetsSql.Save.SQL)) {
+            for (var item : offsets) {
+                stmt.setString(TopicsOffsetsSql.Save.PARAM_INDEX_DIRECTION, direction.name());
+                stmt.setString(TopicsOffsetsSql.Save.PARAM_INDEX_READER, readerName);
+                stmt.setString(TopicsOffsetsSql.Save.PARAM_INDEX_TOPIC, item.getTopic());
+                stmt.setInt(TopicsOffsetsSql.Save.PARAM_INDEX_PARTITION, item.getPartition());
+                stmt.setLong(TopicsOffsetsSql.Save.PARAM_INDEX_OFFSET, item.getOffset());
+                stmt.execute();
+            }
+        }
     }
 
     private Connection getCheckedConnection() throws SQLException {

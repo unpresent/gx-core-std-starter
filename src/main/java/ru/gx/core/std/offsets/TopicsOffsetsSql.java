@@ -3,13 +3,14 @@ package ru.gx.core.std.offsets;
 class TopicsOffsetsSql {
     public static class Load {
         public final static String SQL =
-                "SELECT\n" +
-                        "    \"Topic\",\n" +
-                        "    \"Partition\",\n" +
-                        "    \"Offset\"\n" +
-                        "FROM \"Kafka\".\"Offsets\"" +
-                        "WHERE  \"Direction\" = ?" +
-                        "   AND \"ServiceName\" = ?";
+                """
+                        SELECT
+                            "Topic",
+                            "Partition",
+                            "Offset"
+                        FROM "Kafka"."Offsets"
+                        WHERE   "Direction" = ?
+                            AND "ServiceName" = ?""";
         public final static int COLUMN_INDEX_TOPIC = 1;
         public final static int COLUMN_INDEX_PARTITION = 2;
         public final static int COLUMN_INDEX_OFFSET = 3;
@@ -20,10 +21,11 @@ class TopicsOffsetsSql {
 
     public static class Save {
         public final static String SQL =
-                "INSERT INTO \"Kafka\".\"Offsets\" (\"Direction\", \"ServiceName\", \"Topic\", \"Partition\", \"Offset\")\n" +
-                        "VALUES (?, ?, ?, ?, ?)\n" +
-                        "ON CONFLICT (\"Direction\", \"ServiceName\", \"Topic\", \"Partition\") DO UPDATE SET\n" +
-                        "    \"Offset\" = EXCLUDED.\"Offset\"";
+                """
+                        INSERT INTO "Kafka"."Offsets" ("Direction", "ServiceName", "Topic", "Partition", "Offset")
+                        VALUES (?, ?, ?, ?, ?)
+                        ON CONFLICT ("Direction", "ServiceName", "Topic", "Partition") DO UPDATE SET
+                            "Offset" = EXCLUDED."Offset\"""";
         public final static int PARAM_INDEX_DIRECTION = 1;
         public final static int PARAM_INDEX_READER = 2;
         public final static int PARAM_INDEX_TOPIC = 3;

@@ -1,0 +1,3 @@
+service:
+  offsets-controller:
+    file-storage: offsets.data

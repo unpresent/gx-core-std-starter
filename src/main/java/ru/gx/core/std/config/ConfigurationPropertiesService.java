@@ -10,40 +10,18 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 @Setter
 public class ConfigurationPropertiesService {
     @NestedConfigurationProperty
-    private OffsetsLoaders offsetsLoaders;
-
-    @NestedConfigurationProperty
-    private OffsetsSavers offsetsSavers;
+    private OffsetsController offsetsController;
 
     @Getter
     @Setter
-    public static class OffsetsLoaders {
-        @NestedConfigurationProperty
-        private NativeJdbc nativeJdbc;
-
-        @NestedConfigurationProperty
-        private Jpa jpa;
+    public static class OffsetsController {
+        public OffsetsControllerType type = OffsetsControllerType.File;
+        public String fileStorage = "offsets.data";
     }
 
-    @Getter
-    @Setter
-    public static class OffsetsSavers {
-        @NestedConfigurationProperty
-        private NativeJdbc nativeJdbc;
-
-        @NestedConfigurationProperty
-        private Jpa jpa;
-    }
-
-    @Getter
-    @Setter
-    public static class NativeJdbc {
-        private boolean enabled = true;
-    }
-
-    @Getter
-    @Setter
-    public static class Jpa {
-        private boolean enabled = true;
+    public enum OffsetsControllerType {
+        File,
+        Jdbc,
+        Jpa
     }
 }
