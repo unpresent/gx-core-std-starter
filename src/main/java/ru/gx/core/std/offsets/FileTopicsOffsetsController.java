@@ -83,10 +83,11 @@ public class FileTopicsOffsetsController implements TopicsOffsetsController {
     }
 
     @Override
+    @NotNull
     public Collection<TopicPartitionOffset> loadOffsets(@NotNull final ChannelDirection direction, @NotNull final String readerName) {
         var reader = this.readerOffsets.get(readerName);
         if (reader == null) {
-            return null;
+            return new ArrayList<>();
         }
 
         if (direction == ChannelDirection.In) {

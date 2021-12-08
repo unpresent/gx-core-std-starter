@@ -27,6 +27,7 @@ public class JpaTopicsOffsetsController implements TopicsOffsetsController {
     @SuppressWarnings("unchecked")
     @SneakyThrows(SQLException.class)
     @Override
+    @NotNull
     public Collection<TopicPartitionOffset> loadOffsets(@NotNull final ChannelDirection direction, @NotNull final String serviceName) {
         final var session = getCheckedSession();
 

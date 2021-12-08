@@ -25,6 +25,7 @@ public class JdbcTopicsOffsetsController implements TopicsOffsetsController {
 
     @SneakyThrows(SQLException.class)
     @Override
+    @NotNull
     public Collection<TopicPartitionOffset> loadOffsets(@NotNull final ChannelDirection direction, @NotNull final String serviceName) {
         final var connection = getCheckedConnection();
 
