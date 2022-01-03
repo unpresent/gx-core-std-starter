@@ -6,28 +6,23 @@
 
     <groupId>ru.gx.core</groupId>
     <artifactId>gx-std-starter</artifactId>
-    <version>1.3</version>
+    <version>1.4.0</version>
 
     <properties>
         <encoding>UTF-8</encoding>
-
-        <gx-starter.version>1.3</gx-starter.version>
-        <gx-data-starter.version>1.3</gx-data-starter.version>
-        <gx-kafka-starter.version>1.3</gx-kafka-starter.version>
-
-        <org.springframework.boot.version>2.6.0</org.springframework.boot.version>
-
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <spring-boot-maven-plugin.version>2.6.0</spring-boot-maven-plugin.version>
+        <gx-core-dependencies.version>1.4.0</gx-core-dependencies.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${org.springframework.boot.version}</version>
+                <groupId>ru.gx.core</groupId>
+                <artifactId>gx-core-dependencies</artifactId>
+                <version>${gx-core-dependencies.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -62,24 +57,20 @@
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>22.0.0</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>ru.gx.core</groupId>
             <artifactId>gx-starter</artifactId>
-            <version>${gx-starter.version}</version>
         </dependency>
         <dependency>
             <groupId>ru.gx.core</groupId>
             <artifactId>gx-data-starter</artifactId>
-            <version>${gx-data-starter.version}</version>
         </dependency>
         <dependency>
             <groupId>ru.gx.core</groupId>
             <artifactId>gx-kafka-starter</artifactId>
-            <version>${gx-kafka-starter.version}</version>
         </dependency>
 
 
@@ -116,7 +107,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${org.springframework.boot.version}</version>
+                <version>${spring-boot-maven-plugin.version}</version>
             </plugin>
         </plugins>
     </build>
