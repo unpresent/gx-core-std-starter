@@ -6,7 +6,7 @@
 
     <groupId>ru.gx.core</groupId>
     <artifactId>gx-std-starter</artifactId>
-    <version>1.4.0</version>
+    <version>1.4.1</version>
 
     <properties>
         <encoding>UTF-8</encoding>
@@ -14,7 +14,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <spring-boot-maven-plugin.version>2.6.0</spring-boot-maven-plugin.version>
-        <gx-core-dependencies.version>1.4.0</gx-core-dependencies.version>
+        <gx-core-dependencies.version>1.4.1</gx-core-dependencies.version>
     </properties>
 
     <dependencyManagement>
