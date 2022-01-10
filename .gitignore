@@ -1,17 +1,20 @@
 # IDEA
 /.idea
-.idea
+
+# Gradle
+/.gradle
 
 # Target
 /target
-target
+
+# Build
+/build
 
 # Compiled class file
 *.class
 
 # Log file
 /log
-log
 *.log
 
 # BlueJ files
