@@ -8,13 +8,12 @@ import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import net.minidev.json.annotate.JsonIgnore;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import ru.gx.core.channels.ChannelDirection;
 import ru.gx.core.data.AbstractDataObject;
 import ru.gx.core.data.AbstractDataPackage;
 import ru.gx.core.kafka.offsets.TopicPartitionOffset;
-import ru.gx.core.kafka.offsets.TopicsOffsetsController;
+import ru.gx.core.kafka.offsets.TopicsOffsetsStorage;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
@@ -22,9 +21,10 @@ import java.util.*;
 
 import static lombok.AccessLevel.PROTECTED;
 
-public class FileTopicsOffsetsController implements TopicsOffsetsController {
-    @Setter(value = PROTECTED, onMethod_ = @Autowired)
-    private ObjectMapper objectMapper;
+public class FileTopicsOffsetsStorage implements TopicsOffsetsStorage {
+    @Getter(value = PROTECTED)
+    @NotNull
+    private final ObjectMapper objectMapper;
 
     @Getter(value = PROTECTED)
     @Setter(value = PROTECTED)
@@ -34,6 +34,10 @@ public class FileTopicsOffsetsController implements TopicsOffsetsController {
     private File fileStorage;
 
     private final Map<String, ReaderOffsets> readerOffsets = new HashMap<>();
+
+    public FileTopicsOffsetsStorage(@NotNull final ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @SneakyThrows({FileNotFoundException.class, IOException.class})
     @SuppressWarnings("ResultOfMethodCallIgnored")
