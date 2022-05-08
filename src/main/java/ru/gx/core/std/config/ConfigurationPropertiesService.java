@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import ru.gx.core.worker.CommonWorkerSettingsDefaults;
 
-@ConfigurationProperties(prefix = "service")
+@ConfigurationProperties(prefix = "service.kafka")
 @Getter
 @Setter
 public class ConfigurationPropertiesService {
@@ -14,7 +14,7 @@ public class ConfigurationPropertiesService {
     private OffsetsController offsetsController;
 
     @NestedConfigurationProperty
-    public KafkaDbSaver kafkaDbsaver;
+    public DbSaver dbSaver;
 
     @Getter
     @Setter
@@ -30,7 +30,7 @@ public class ConfigurationPropertiesService {
 
     @Getter
     @Setter
-    public static class KafkaDbSaver {
+    public static class DbSaver {
         public static final int SETTING_ACCUMULATE_DURING_MS_DEFAULT = 1000;
         public static final int SETTING_PACKAGE_LIMIT_SIZE_DEFAULT = 100;
 
