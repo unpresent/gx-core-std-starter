@@ -11,19 +11,19 @@ import ru.gx.core.worker.CommonWorkerSettingsDefaults;
 @Setter
 public class ConfigurationPropertiesService {
     @NestedConfigurationProperty
-    private OffsetsController offsetsController;
+    private OffsetsStorage offsetsStorage;
 
     @NestedConfigurationProperty
     public DbSaver dbSaver;
 
     @Getter
     @Setter
-    public static class OffsetsController {
-        public OffsetsControllerType type = OffsetsControllerType.File;
+    public static class OffsetsStorage {
+        public OffsetsStorageType type = OffsetsStorageType.File;
         public String fileStorage = "offsets.data";
     }
 
-    public enum OffsetsControllerType {
+    public enum OffsetsStorageType {
         File,
         Sql
     }

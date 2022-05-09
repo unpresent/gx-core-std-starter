@@ -3,11 +3,14 @@ package ru.gx.core.std.offsets;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.annotate.JsonIgnore;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import ru.gx.core.channels.ChannelDirection;
 import ru.gx.core.data.AbstractDataObject;
@@ -21,22 +24,26 @@ import java.util.*;
 
 import static lombok.AccessLevel.PROTECTED;
 
+@Slf4j
 public class FileTopicsOffsetsStorage implements TopicsOffsetsStorage {
     @Getter(value = PROTECTED)
     @NotNull
     private final ObjectMapper objectMapper;
 
     @Getter(value = PROTECTED)
-    @Setter(value = PROTECTED)
-    @Value("${service.offsets-controller.file-storage}")
-    private String fileStorageName;
+    @NotNull
+    private final String fileStorageName;
 
     private File fileStorage;
 
     private final Map<String, ReaderOffsets> readerOffsets = new HashMap<>();
 
-    public FileTopicsOffsetsStorage(@NotNull final ObjectMapper objectMapper) {
+    public FileTopicsOffsetsStorage(
+            @NotNull @Value("${service.kafka.offsets-storage.file-storage}") final String fileStorageName,
+            @NotNull final ObjectMapper objectMapper
+    ) {
         this.objectMapper = objectMapper;
+        this.fileStorageName = fileStorageName;
     }
 
     @SneakyThrows({FileNotFoundException.class, IOException.class})
@@ -62,33 +69,39 @@ public class FileTopicsOffsetsStorage implements TopicsOffsetsStorage {
         }
     }
 
-    @SneakyThrows({FileNotFoundException.class, IOException.class})
     @Override
     public void saveOffsets(@NotNull final ChannelDirection direction, @NotNull final String readerName, @NotNull final Collection<TopicPartitionOffset> offsets) {
-        var reader = this.readerOffsets.get(readerName);
-        if (reader == null) {
-            reader = new ReaderOffsets().setReaderName(readerName);
-            this.readerOffsets.put(readerName, reader);
-        }
+        try {
+            var reader = this.readerOffsets.get(readerName);
+            if (reader == null) {
+                reader = new ReaderOffsets().setReaderName(readerName);
+                this.readerOffsets.put(readerName, reader);
+            }
 
-        if (direction == ChannelDirection.In) {
-            reader.getIncomeOffsets().clear();
-            reader.getIncomeOffsets().addAll(offsets);
-        } else {
-            reader.getOutcomeOffsets().clear();
-            reader.getOutcomeOffsets().addAll(offsets);
-        }
+            if (direction == ChannelDirection.In) {
+                reader.getIncomeOffsets().clear();
+                reader.getIncomeOffsets().addAll(offsets);
+            } else {
+                reader.getOutcomeOffsets().clear();
+                reader.getOutcomeOffsets().addAll(offsets);
+            }
 
-        try (final var out = new FileOutputStream(this.fileStorage)) {
-            final var readers = new ReaderOffsetsPackage();
-            readers.getObjects().addAll(this.readerOffsets.values());
-            this.objectMapper.writeValue(out, readers);
+            try (final var out = new FileOutputStream(this.fileStorage)) {
+                final var readers = new ReaderOffsetsPackage();
+                readers.getObjects().addAll(this.readerOffsets.values());
+                this.objectMapper.writeValue(out, readers);
+            }
+        } catch (IOException e) {
+            log.error("", e);
         }
     }
 
     @Override
-    @NotNull
-    public Collection<TopicPartitionOffset> loadOffsets(@NotNull final ChannelDirection direction, @NotNull final String readerName) {
+    @Nullable
+    public Collection<TopicPartitionOffset> loadOffsets(
+            @NotNull final ChannelDirection direction,
+            @NotNull final String readerName
+    ) {
         var reader = this.readerOffsets.get(readerName);
         if (reader == null) {
             return new ArrayList<>();

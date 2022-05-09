@@ -11,9 +11,10 @@ import java.util.ArrayList;
 @Testable
 public class TestFileTopicsOffsets extends FileTopicsOffsetsStorage {
 
-    public TestFileTopicsOffsets(@NotNull final ObjectMapper objectMapper) {
-        super(objectMapper);
-        setFileStorageName("offsets.data");
+    public TestFileTopicsOffsets(
+            @NotNull final ObjectMapper objectMapper
+    ) {
+        super("offsets.data", objectMapper);
     }
 
     @Test
