@@ -15,8 +15,10 @@ import org.springframework.beans.factory.annotation.Value;
 import ru.gx.core.channels.ChannelDirection;
 import ru.gx.core.data.AbstractDataObject;
 import ru.gx.core.data.AbstractDataPackage;
+import ru.gx.core.kafka.KafkaConstants;
 import ru.gx.core.kafka.offsets.TopicPartitionOffset;
 import ru.gx.core.kafka.offsets.TopicsOffsetsStorage;
+import ru.gx.core.messaging.Message;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
@@ -70,6 +72,24 @@ public class FileTopicsOffsetsStorage implements TopicsOffsetsStorage {
     }
 
     @Override
+    @Nullable
+    public Collection<TopicPartitionOffset> loadOffsets(
+            @NotNull final ChannelDirection direction,
+            @NotNull final String readerName
+    ) {
+        var reader = this.readerOffsets.get(readerName);
+        if (reader == null) {
+            return new ArrayList<>();
+        }
+
+        if (direction == ChannelDirection.In) {
+            return reader.getIncomeOffsets();
+        } else {
+            return reader.getOutcomeOffsets();
+        }
+    }
+
+    @Override
     public void saveOffsets(@NotNull final ChannelDirection direction, @NotNull final String readerName, @NotNull final Collection<TopicPartitionOffset> offsets) {
         try {
             var reader = this.readerOffsets.get(readerName);
@@ -96,22 +116,27 @@ public class FileTopicsOffsetsStorage implements TopicsOffsetsStorage {
         }
     }
 
-    @Override
-    @Nullable
-    public Collection<TopicPartitionOffset> loadOffsets(
-            @NotNull final ChannelDirection direction,
-            @NotNull final String readerName
-    ) {
-        var reader = this.readerOffsets.get(readerName);
-        if (reader == null) {
-            return new ArrayList<>();
-        }
 
-        if (direction == ChannelDirection.In) {
-            return reader.getIncomeOffsets();
-        } else {
-            return reader.getOutcomeOffsets();
+    @Override
+    public void saveOffsetFromMessage(
+            @NotNull final ChannelDirection channelDirection,
+            @NotNull final String serviceName,
+            @NotNull final Message<?> message
+    ) {
+        final var partition = (Integer) message.getMetadataValue(KafkaConstants.METADATA_PARTITION);
+        if (partition == null) {
+            throw new NullPointerException("Message doesn't have metadata " + KafkaConstants.METADATA_PARTITION + "!");
         }
+        final var offset = (Long) message.getMetadataValue(KafkaConstants.METADATA_OFFSET);
+        if (offset == null) {
+            throw new NullPointerException("Message doesn't have metadata " + KafkaConstants.METADATA_OFFSET + "!");
+        }
+        final var topicName = message.getChannelDescriptor().getApi().getName();
+        saveOffsets(
+                ChannelDirection.In,
+                serviceName,
+                Collections.singletonList(new TopicPartitionOffset(topicName, partition, offset))
+        );
     }
 
     @Accessors(chain = true)
