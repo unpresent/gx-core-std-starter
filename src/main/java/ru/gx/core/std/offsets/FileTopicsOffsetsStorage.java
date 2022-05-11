@@ -12,7 +12,9 @@ import net.minidev.json.annotate.JsonIgnore;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
+import ru.gx.core.channels.AbstractChannelsConfiguration;
 import ru.gx.core.channels.ChannelDirection;
+import ru.gx.core.channels.ChannelsConfiguration;
 import ru.gx.core.data.AbstractDataObject;
 import ru.gx.core.data.AbstractDataPackage;
 import ru.gx.core.kafka.KafkaConstants;
@@ -75,9 +77,10 @@ public class FileTopicsOffsetsStorage implements TopicsOffsetsStorage {
     @Nullable
     public Collection<TopicPartitionOffset> loadOffsets(
             @NotNull final ChannelDirection direction,
-            @NotNull final String readerName
+            @NotNull final String serviceName,
+            @NotNull final ChannelsConfiguration configuration
     ) {
-        var reader = this.readerOffsets.get(readerName);
+        var reader = this.readerOffsets.get(serviceName);
         if (reader == null) {
             return new ArrayList<>();
         }
@@ -90,12 +93,17 @@ public class FileTopicsOffsetsStorage implements TopicsOffsetsStorage {
     }
 
     @Override
-    public void saveOffsets(@NotNull final ChannelDirection direction, @NotNull final String readerName, @NotNull final Collection<TopicPartitionOffset> offsets) {
+    public void saveOffsets(
+            @NotNull final ChannelDirection direction,
+            @NotNull final String serviceName,
+            @NotNull final ChannelsConfiguration configuration,
+            @NotNull final Collection<TopicPartitionOffset> offsets
+    ) {
         try {
-            var reader = this.readerOffsets.get(readerName);
+            var reader = this.readerOffsets.get(serviceName);
             if (reader == null) {
-                reader = new ReaderOffsets().setReaderName(readerName);
-                this.readerOffsets.put(readerName, reader);
+                reader = new ReaderOffsets().setReaderName(serviceName);
+                this.readerOffsets.put(serviceName, reader);
             }
 
             if (direction == ChannelDirection.In) {
@@ -116,7 +124,6 @@ public class FileTopicsOffsetsStorage implements TopicsOffsetsStorage {
         }
     }
 
-
     @Override
     public void saveOffsetFromMessage(
             @NotNull final ChannelDirection channelDirection,
@@ -135,6 +142,7 @@ public class FileTopicsOffsetsStorage implements TopicsOffsetsStorage {
         saveOffsets(
                 ChannelDirection.In,
                 serviceName,
+                message.getChannelDescriptor().getOwner(),
                 Collections.singletonList(new TopicPartitionOffset(topicName, partition, offset))
         );
     }

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.gx.core.channels.ChannelDirection;
+import ru.gx.core.channels.ChannelsConfiguration;
 import ru.gx.core.data.sqlwrapping.ThreadConnectionsWrapper;
 import ru.gx.core.kafka.KafkaConstants;
 import ru.gx.core.kafka.offsets.TopicPartitionOffset;
@@ -31,7 +32,11 @@ public class SqlTopicsOffsetsStorage implements TopicsOffsetsStorage {
 
     @Override
     @Nullable
-    public Collection<TopicPartitionOffset> loadOffsets(@NotNull final ChannelDirection direction, @NotNull final String serviceName) {
+    public Collection<TopicPartitionOffset> loadOffsets(
+            @NotNull final ChannelDirection direction,
+            @NotNull final String serviceName,
+            @NotNull final ChannelsConfiguration configuration
+    ) {
         try (final var connectionWrapper = this.threadConnectionsWrapper.getCurrentThreadConnection()) {
 
             final var result = new ArrayList<TopicPartitionOffset>();
@@ -40,11 +45,26 @@ public class SqlTopicsOffsetsStorage implements TopicsOffsetsStorage {
                 commandWrapper.setStringParam(TopicsOffsetsSql.Load.PARAM_INDEX_SERVICE_NAME, serviceName);
                 final var rs = commandWrapper.executeWithResult();
                 while (rs.next()) {
-                    result.add(new TopicPartitionOffset(
-                            Objects.requireNonNull(rs.getString(TopicsOffsetsSql.Load.COLUMN_INDEX_TOPIC)),
-                            Objects.requireNonNull(rs.getInteger(TopicsOffsetsSql.Load.COLUMN_INDEX_PARTITION)),
-                            Objects.requireNonNull(rs.getLong(TopicsOffsetsSql.Load.COLUMN_INDEX_OFFSET))
-                    ));
+                    final var topicName = Objects.requireNonNull(
+                            rs.getString(TopicsOffsetsSql.Load.COLUMN_INDEX_TOPIC)
+                    );
+                    for (final var descriptor : configuration.getAll()) {
+                        // В результат добавляем только те, что есть в config-е
+                        if (descriptor.getApi().getName().equals(topicName)) {
+                            result.add(
+                                    new TopicPartitionOffset(
+                                            topicName,
+                                            Objects.requireNonNull(
+                                                    rs.getInteger(TopicsOffsetsSql.Load.COLUMN_INDEX_PARTITION)
+                                            ),
+                                            Objects.requireNonNull(
+                                                    rs.getLong(TopicsOffsetsSql.Load.COLUMN_INDEX_OFFSET)
+                                            )
+                                    )
+                            );
+                            break;
+                        }
+                    }
                 }
             }
             return result;
@@ -59,6 +79,7 @@ public class SqlTopicsOffsetsStorage implements TopicsOffsetsStorage {
     public void saveOffsets(
             @NotNull final ChannelDirection direction,
             @NotNull final String readerName,
+            @NotNull final ChannelsConfiguration configuration,
             @NotNull final Collection<TopicPartitionOffset> offsets
     ) {
         try (final var connectionWrapper = this.threadConnectionsWrapper.getCurrentThreadConnection()) {
@@ -95,6 +116,7 @@ public class SqlTopicsOffsetsStorage implements TopicsOffsetsStorage {
         saveOffsets(
                 ChannelDirection.In,
                 serviceName,
+                message.getChannelDescriptor().getOwner(),
                 Collections.singletonList(new TopicPartitionOffset(topicName, partition, offset))
         );
     }
