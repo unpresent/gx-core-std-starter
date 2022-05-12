@@ -25,7 +25,8 @@ public class ConfigurationPropertiesService {
 
     public enum OffsetsStorageType {
         File,
-        Sql
+        Sql,
+        Kafka
     }
 
     @Getter

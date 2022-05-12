@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import ru.gx.core.data.sqlwrapping.ThreadConnectionsWrapper;
 import ru.gx.core.kafka.offsets.TopicsOffsetsStorage;
 import ru.gx.core.std.offsets.FileTopicsOffsetsStorage;
+import ru.gx.core.std.offsets.KafkaTopicsOffsetsStorage;
 import ru.gx.core.std.offsets.SqlTopicsOffsetsStorage;
 
 @Configuration
@@ -34,5 +35,12 @@ public class CommonAutoConfiguration {
             @NotNull final ThreadConnectionsWrapper connectionsWrapper
     ) {
         return new SqlTopicsOffsetsStorage(connectionsWrapper);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(value = "service.kafka.offsets-storage.type", havingValue = "kafka")
+    public KafkaTopicsOffsetsStorage kafkaTopicsOffsetsStorage() {
+        return new KafkaTopicsOffsetsStorage();
     }
 }

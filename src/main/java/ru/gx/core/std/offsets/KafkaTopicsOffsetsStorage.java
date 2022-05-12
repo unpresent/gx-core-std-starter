@@ -1,6 +1,5 @@
 package ru.gx.core.std.offsets;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -19,15 +18,9 @@ import ru.gx.core.messaging.Message;
 
 import java.util.*;
 
-import static lombok.AccessLevel.PROTECTED;
-
 @Slf4j
 @RequiredArgsConstructor
 public class KafkaTopicsOffsetsStorage implements TopicsOffsetsStorage {
-
-    @Getter(PROTECTED)
-    @NotNull
-    private final Consumer<?, ?> consumer;
 
     @SuppressWarnings("unchecked")
     @Override
