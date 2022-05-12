@@ -8,10 +8,8 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.gx.core.channels.AbstractChannelsConfiguration;
 import ru.gx.core.channels.ChannelDirection;
 import ru.gx.core.channels.ChannelsConfiguration;
-import ru.gx.core.data.sqlwrapping.ThreadConnectionsWrapper;
 import ru.gx.core.kafka.KafkaConstants;
 import ru.gx.core.kafka.load.KafkaIncomeTopicLoadingDescriptor;
 import ru.gx.core.kafka.offsets.PartitionOffset;
@@ -19,8 +17,6 @@ import ru.gx.core.kafka.offsets.TopicPartitionOffset;
 import ru.gx.core.kafka.offsets.TopicsOffsetsStorage;
 import ru.gx.core.messaging.Message;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.*;
 
 import static lombok.AccessLevel.PROTECTED;
