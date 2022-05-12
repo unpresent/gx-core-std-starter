@@ -107,6 +107,8 @@ public class FileTopicsOffsetsStorage implements TopicsOffsetsStorage {
             if (direction == ChannelDirection.In) {
                 reader.getIncomeOffsets().clear();
                 reader.getIncomeOffsets().addAll(offsets);
+                // Добавляем 1 к обработанному смещению. Т.о. храним следующий к обработке offset
+                reader.getIncomeOffsets().forEach(offset -> offset.setOffset(offset.getOffset() + 1));
             } else {
                 reader.getOutcomeOffsets().clear();
                 reader.getOutcomeOffsets().addAll(offsets);

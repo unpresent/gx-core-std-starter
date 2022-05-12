@@ -43,12 +43,15 @@ public class KafkaTopicsOffsetsStorage implements TopicsOffsetsStorage {
                                 + " for " + this.getClass().getName()
                 );
             }
-            final var consumer = kafkaIncomeDescriptor.getConsumer();
             final var topicPartitions = (Set<TopicPartition>) Set.copyOf(
                     kafkaIncomeDescriptor.getTopicPartitions()
             );
-            final var committed = (Map<TopicPartition, OffsetAndMetadata>)
-                    consumer.committed(topicPartitions);
+            final var consumer = kafkaIncomeDescriptor.getConsumer();
+            Map<TopicPartition, OffsetAndMetadata> committed;
+            //noinspection SynchronizationOnLocalVariableOrMethodParameter
+            synchronized (consumer) {
+                committed = consumer.committed(topicPartitions);
+            }
 
             committed
                     .forEach((key, value) -> result.add(
@@ -128,9 +131,13 @@ public class KafkaTopicsOffsetsStorage implements TopicsOffsetsStorage {
         offsets.forEach(o ->
                 map.put(
                         new TopicPartition(topic, o.getPartition()),
-                        new OffsetAndMetadata(o.getOffset())
+                        // Добавляем 1 к обработанному смещению. Т.о. храним следующий к обработке offset
+                        new OffsetAndMetadata(o.getOffset() + 1)
                 )
         );
-        consumer.commitSync(map);
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (consumer) {
+            consumer.commitSync(map);
+        }
     }
 }

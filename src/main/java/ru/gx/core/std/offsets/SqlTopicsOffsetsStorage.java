@@ -89,7 +89,8 @@ public class SqlTopicsOffsetsStorage implements TopicsOffsetsStorage {
                     commandWrapper.setStringParam(TopicsOffsetsSql.Save.PARAM_INDEX_READER, readerName);
                     commandWrapper.setStringParam(TopicsOffsetsSql.Save.PARAM_INDEX_TOPIC, item.getTopic());
                     commandWrapper.setIntegerParam(TopicsOffsetsSql.Save.PARAM_INDEX_PARTITION, item.getPartition());
-                    commandWrapper.setLongParam(TopicsOffsetsSql.Save.PARAM_INDEX_OFFSET, item.getOffset());
+                    // Добавляем 1 к обработанному смещению. Т.о. храним следующий к обработке offset
+                    commandWrapper.setLongParam(TopicsOffsetsSql.Save.PARAM_INDEX_OFFSET, item.getOffset() + 1);
                     commandWrapper.executeNoResult();
                 }
             }
