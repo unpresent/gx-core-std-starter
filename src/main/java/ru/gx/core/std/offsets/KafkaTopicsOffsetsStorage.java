@@ -55,7 +55,7 @@ public class KafkaTopicsOffsetsStorage implements TopicsOffsetsStorage {
                             new TopicPartitionOffset(
                                     key.topic(),
                                     key.partition(),
-                                    value.offset()
+                                    value == null ? 0 : value.offset()
                             ))
                     );
 
