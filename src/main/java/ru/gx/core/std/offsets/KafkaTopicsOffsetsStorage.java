@@ -22,7 +22,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class KafkaTopicsOffsetsStorage implements TopicsOffsetsStorage {
 
-    @SuppressWarnings("unchecked")
     @Override
     @Nullable
     public Collection<TopicPartitionOffset> loadOffsets(
@@ -75,7 +74,7 @@ public class KafkaTopicsOffsetsStorage implements TopicsOffsetsStorage {
     ) {
         configuration.getAll().forEach(descriptor -> {
             // Пробегаемся по дескрипторам конфигурации
-            final var kafkaDescriptor = (KafkaIncomeTopicLoadingDescriptor<?>) descriptor;
+            final var kafkaDescriptor = (KafkaIncomeTopicLoadingDescriptor) descriptor;
             final var localOffsets = new ArrayList<PartitionOffset>();
             kafkaDescriptor.getTopicPartitions().forEach(topicPartition -> {
                 // Пробегаемся по всем парам <Partition, Offset>
@@ -88,7 +87,7 @@ public class KafkaTopicsOffsetsStorage implements TopicsOffsetsStorage {
                 });
             });
             // И сохраняем отобранные
-            internalSaveOffsets(kafkaDescriptor.getApi().getName(), kafkaDescriptor.getConsumer(), localOffsets);
+            internalSaveOffsets(kafkaDescriptor.getChannelName(), kafkaDescriptor.getConsumer(), localOffsets);
         });
     }
 
@@ -106,7 +105,7 @@ public class KafkaTopicsOffsetsStorage implements TopicsOffsetsStorage {
         if (offset == null) {
             throw new NullPointerException("Message doesn't have metadata " + KafkaConstants.METADATA_OFFSET + "!");
         }
-        final var topicName = message.getChannelDescriptor().getApi().getName();
+        final var topicName = message.getChannelDescriptor().getChannelName();
 
         if (!(message.getChannelDescriptor() instanceof final KafkaIncomeTopicLoadingDescriptor kafkaIncomeDescriptor)) {
             throw new UnsupportedOperationException(
@@ -116,7 +115,7 @@ public class KafkaTopicsOffsetsStorage implements TopicsOffsetsStorage {
         }
 
         internalSaveOffsets(
-                kafkaIncomeDescriptor.getApi().getName(),
+                kafkaIncomeDescriptor.getChannelName(),
                 kafkaIncomeDescriptor.getConsumer(),
                 Set.of(new TopicPartitionOffset(topicName, partition, offset))
         );
