@@ -15,10 +15,8 @@ import ru.gx.core.channels.ChannelDirection;
 import ru.gx.core.channels.ChannelsConfiguration;
 import ru.gx.core.data.AbstractDataObject;
 import ru.gx.core.data.AbstractDataPackage;
-import ru.gx.core.kafka.KafkaConstants;
 import ru.gx.core.kafka.offsets.TopicPartitionOffset;
 import ru.gx.core.kafka.offsets.TopicsOffsetsStorage;
-import ru.gx.core.messaging.Message;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
@@ -27,7 +25,7 @@ import java.util.*;
 import static lombok.AccessLevel.PROTECTED;
 
 @Slf4j
-public class FileTopicsOffsetsStorage implements TopicsOffsetsStorage {
+public class FileTopicsOffsetsStorage extends AbstractTopicsOffsetsStorage implements TopicsOffsetsStorage {
     @Getter(value = PROTECTED)
     @NotNull
     private final ObjectMapper objectMapper;
@@ -122,29 +120,6 @@ public class FileTopicsOffsetsStorage implements TopicsOffsetsStorage {
         } catch (IOException e) {
             log.error("", e);
         }
-    }
-
-    @Override
-    public void saveOffsetFromMessage(
-            @NotNull final ChannelDirection channelDirection,
-            @NotNull final String serviceName,
-            @NotNull final Message<?> message
-    ) {
-        final var partition = (Integer) message.getMetadataValue(KafkaConstants.METADATA_PARTITION);
-        if (partition == null) {
-            throw new NullPointerException("Message doesn't have metadata " + KafkaConstants.METADATA_PARTITION + "!");
-        }
-        final var offset = (Long) message.getMetadataValue(KafkaConstants.METADATA_OFFSET);
-        if (offset == null) {
-            throw new NullPointerException("Message doesn't have metadata " + KafkaConstants.METADATA_OFFSET + "!");
-        }
-        final var topicName = message.getChannelDescriptor().getApi().getName();
-        saveOffsets(
-                ChannelDirection.In,
-                serviceName,
-                message.getChannelDescriptor().getOwner(),
-                Collections.singletonList(new TopicPartitionOffset(topicName, partition, offset))
-        );
     }
 
     @Accessors(chain = true)
