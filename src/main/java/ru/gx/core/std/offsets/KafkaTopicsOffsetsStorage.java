@@ -50,12 +50,15 @@ public class KafkaTopicsOffsetsStorage extends AbstractTopicsOffsetsStorage impl
             }
 
             committed
-                    .forEach((key, value) -> result.add(
-                            new TopicPartitionOffset(
-                                    key.topic(),
-                                    key.partition(),
-                                    value == null ? 0 : value.offset()
-                            ))
+                    .forEach((key, value) -> {
+                                if (value != null)
+                                    result.add(
+                                            new TopicPartitionOffset(
+                                                    key.topic(),
+                                                    key.partition(),
+                                                    value.offset()
+                                            ));
+                            }
                     );
 
         }
